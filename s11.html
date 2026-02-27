@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Children's Heart Rate Monitor</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin-top: 50px;
+            background-color: #f0f8ff;
+        }
+        #heartRate {
+            font-size: 48px;
+            margin: 20px 0;
+        }
+        #riskStatus {
+            font-size: 24px;
+            font-weight: bold;
+        }
+        .low { color: green; }
+        .moderate { color: orange; }
+        .high { color: red; }
+        input[type="number"] {
+            font-size: 18px;
+            padding: 5px;
+            width: 100px;
+        }
+        button {
+            font-size: 18px;
+            padding: 5px 10px;
+            margin-left: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Children's Heart Rate Monitor</h1>
+    <div>
+        Heart Rate (BPM): <span id="heartRate">0</span>
+    </div>
+    <div>
+        Risk Prediction: <span id="riskStatus" class="low">Stable</span>
+    </div>
+
+    <div style="margin-top:30px;">
+        <input type="number" id="pulseInput" placeholder="Enter BPM">
+        <button onclick="submitPulse()">Submit</button>
+    </div>
+
+    <script>
+        // Predict subtle risk based on pulse
+        function predictRisk(pulse) {
+            if(pulse < 85) return {status: "Low", className: "low"};
+            else if(pulse <= 120) return {status: "Moderate", className: "moderate"};
+            else return {status: "High", className: "high"};
+        }
+
+        // Update monitor with given pulse
+        function updateMonitor(pulse) {
+            const risk = predictRisk(pulse);
+
+            document.getElementById("heartRate").textContent = pulse;
+            const riskElement = document.getElementById("riskStatus");
+            riskElement.textContent = risk.status;
+            riskElement.className = risk.className;
+        }
+
+        // Handle user input
+        function submitPulse() {
+            const pulseInput = document.getElementById("pulseInput");
+            const pulse = parseInt(pulseInput.value);
+            if(!isNaN(pulse) && pulse > 0) {
+                updateMonitor(pulse);
+            } else {
+                alert("Please enter a valid positive number for BPM.");
+            }
+        }
+    </script>
+</body>
+</html>
