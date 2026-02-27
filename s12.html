@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Children's Health Monitor</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            text-align: center;
+            background: #e6f2ff;
+            margin: 0;
+            padding: 50px;
+        }
+
+        h1 {
+            color: #003366;
+        }
+
+        .monitor {
+            background: #ffffff;
+            border-radius: 12px;
+            padding: 20px;
+            margin: 20px auto;
+            max-width: 400px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .monitor h2 {
+            margin-bottom: 10px;
+        }
+
+        .reading {
+            font-size: 36px;
+            margin: 10px 0;
+        }
+
+        .status {
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        .low { color: green; }
+        .moderate { color: orange; }
+        .high { color: red; }
+
+        input[type="number"] {
+            font-size: 16px;
+            padding: 5px;
+            width: 100px;
+        }
+
+        button {
+            font-size: 16px;
+            padding: 5px 10px;
+            margin-left: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Children's Health Monitor</h1>
+
+    <!-- Heart Rate Monitor -->
+    <div class="monitor" id="heartMonitor">
+        <h2>Heart Rate (BPM)</h2>
+        <div class="reading" id="heartRate">0</div>
+        <div class="status low" id="heartStatus">Stable</div>
+        <input type="number" id="heartInput" placeholder="Enter BPM">
+        <button onclick="submitHeart()">Submit</button>
+    </div>
+
+    <!-- Oxygen Saturation Monitor -->
+    <div class="monitor" id="oxygenMonitor">
+        <h2>Oxygen Saturation (%)</h2>
+        <div class="reading" id="oxygenLevel">0</div>
+        <div class="status low" id="oxygenStatus">Normal</div>
+        <input type="number" id="oxygenInput" placeholder="Enter SpO₂">
+        <button onclick="submitOxygen()">Submit</button>
+    </div>
+
+    <!-- Temperature Monitor -->
+    <div class="monitor" id="tempMonitor">
+        <h2>Body Temperature (°C)</h2>
+        <div class="reading" id="tempLevel">0</div>
+        <div class="status low" id="tempStatus">Normal</div>
+        <input type="number" id="tempInput" placeholder="Enter °C" step="0.1">
+        <button onclick="submitTemp()">Submit</button>
+    </div>
+
+    <script>
+        // Heart rate risk model
+        function heartRisk(pulse) {
+            if(pulse < 85) return {status: "Low", className: "low", issue: "Normal"};
+            else if(pulse <= 120) return {status: "Moderate", className: "moderate", issue: "Monitor"};
+            else return {status: "High", className: "high", issue: "Tachycardia Risk"};
+        }
+
+        // Oxygen saturation risk model
+        function oxygenRisk(spo2) {
+            if(spo2 >= 95) return {status: "Low", className: "low", issue: "Normal"};
+            else if(spo2 >= 90) return {status: "Moderate", className: "moderate", issue: "Mild Hypoxia"};
+            else return {status: "High", className: "high", issue: "Severe Hypoxia"};
+        }
+
+        // Temperature risk model
+        function tempRisk(temp) {
+            if(temp < 37.5) return {status: "Low", className: "low", issue: "Normal"};
+            else if(temp <= 38.5) return {status: "Moderate", className: "moderate", issue: "Fever"};
+            else return {status: "High", className: "high", issue: "High Fever / Infection Risk"};
+        }
+
+        // Update function
+        function updateMonitor(idPrefix, value, riskFunc) {
+            const risk = riskFunc(value);
+            document.getElementById(idPrefix + "Level").textContent = value;
+            const statusElem = document.getElementById(idPrefix + "Status");
+            statusElem.textContent = risk.issue + " (" + risk.status + ")";
+            statusElem.className = "status " + risk.className;
+        }
+
+        // Submit functions
+        function submitHeart() {
+            const val = parseInt(document.getElementById("heartInput").value);
+            if(val > 0) updateMonitor("heart", val, heartRisk);
+            else alert("Enter a valid positive BPM.");
+        }
+
+        function submitOxygen() {
+            const val = parseInt(document.getElementById("oxygenInput").value);
+            if(val > 0) updateMonitor("oxygen", val, oxygenRisk);
+            else alert("Enter a valid SpO₂ value.");
+        }
+
+        function submitTemp() {
+            const val = parseFloat(document.getElementById("tempInput").value);
+            if(val > 0) updateMonitor("temp", val, tempRisk);
+            else alert("Enter a valid temperature.");
+        }
+    </script>
+</body>
+</html>
