@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Wearable Health Monitoring</title>
+    <style>
+        body {
+            font-family: Arial;
+            background-color: #f2f6ff;
+            text-align: center;
+        }
+        .box {
+            background: skyblue;
+            padding: 20px;
+            width: 300px;
+            margin: auto;
+            border-radius: 10px;
+            box-shadow: 0 0 10px blue;
+        }
+        input {
+            width: 90%;
+            padding: 8px;
+            margin: 5px;
+        }
+        button {
+            padding: 10px;
+            width: 100%;
+            background: #4CAF50;
+            color: gray;
+            border: none;
+            cursor: pointer;
+        }
+        #result {
+            margin-top: 15px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+<h1>Wearable Health Monitoring System</h1>
+
+<div class="box">
+    <input type="number" id="hr" placeholder="Heart Rate (bpm)">
+<input type="number" id="spo2" placeholder="SpO2 (%)">
+<input type="number" id="temp" placeholder="Body Temperature (°C)">
+<input type="number" id="motion" placeholder="Motion Level">
+
+<button onclick="analyzeHealth()">Analyze Health</button>
+
+<div id="result"></div>
+</div>
+<script>
+function analyzeHealth() {
+    let hr = document.getElementById("hr").value;
+    let spo2 = document.getElementById("spo2").value;
+    let temp = document.getElementById("temp").value;
+    let motion = document.getElementById("motion").value;
+
+    let risk = "LOW RISK";
+
+    // Multi-signal pattern check (NOT simple threshold)
+    if ((hr > 90 && spo2 < 95) || (temp > 37.5 && motion < 1)) {
+        risk = "HIGH RISK";
+    }
+
+    document.getElementById("result").innerHTML =
+        "Health Status: " + risk;
+}
+</script>
+
+</body>
+</html>
