@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Real-Time Wearable Health Risk Monitor</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: Arial;
+            background: #0f172a;
+            color: white;
+            text-align: center;
+        }
+        .card {
+            background: #1e293b;
+            padding: 20px;
+            margin: 20px auto;
+            width: 80%;
+            border-radius: 12px;
+            box-shadow: 0px 0px 20px rgba(0,0,0,0.5);
+        }
+        .risk-low { color: #22c55e; }
+        .risk-mid { color: #facc15; }
+        .risk-high { color: #ef4444; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+<h1>Wearable AI Health Monitoring System</h1>
+
+<div class="card">
+    <h2>Live Sensor Data</h2>
+    <p>Heart Rate: <span id="hr"></span> bpm</p>
+    <p>SpO₂: <span id="spo2"></span> %</p>
+    <p>Temperature: <span id="temp"></span> °C</p>
+    <p>HRV: <span id="hrv"></span></p>
+    <p>Activity Level: <span id="activity"></span></p>
+</div>
+
+<div class="card">
+    <h2>AI Risk Prediction</h2>
+    <h3>Risk Probability: <span id="riskProb"></span></h3>
+    <h2 id="riskStatus"></h2>
+</div>
+
+<div class="card">
+    <h2>Risk Trend</h2>
+    <canvas id="riskChart"></canvas>
+</div>
+
+<script>
+    // Initialize Chart
+    const ctx = document.getElementById('riskChart').getContext('2d');
+    const riskChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: [],
+            datasets: [{
+                label: 'Risk Probability',
+                data: [],
+                borderColor: 'red',
+                borderWidth: 2,
+                fill: false
+            }]
+        },
+        options: {
+            scales: {
+                y: {
+                    min: 0,
+                    max: 1
+                }
+            }
+        }
+    });
+
+    function sigmoid(x) {
+        return 1 / (1 + Math.exp(-x));
+    }
+
+    // AI Model Weights (Simulated trained model)
+    const weights = {
+        heart_rate: 0.04,
+        spo2: -0.08,
+        temperature: 0.6,
+        hrv: -0.03,
+        activity: -0.5
+    };
+
+    function generateSensorData() {
+        return {
+            heart_rate: 60 + Math.random() * 60,
+            spo2: 92 + Math.random() * 8,
+            temperature: 36 + Math.random() * 2,
+            hrv: 20 + Math.random() * 60,
+            activity: Math.random()
+        };
+    }
+
+    function normalize(value, mean, std) {
+        return (value - mean) / std;
+    }
+
+    function predictRisk(data) {
+        // Normalize inputs
+        const hr = normalize(data.heart_rate, 75, 15);
+        const spo2 = normalize(data.spo2, 97, 2);
+        const temp = normalize(data.temperature, 36.8, 0.5);
+        const hrv = normalize(data.hrv, 50, 15);
+        const activity = normalize(data.activity, 0.5, 0.3);
+
+        let z =
+            weights.heart_rate * hr +
+            weights.spo2 * spo2 +
+            weights.temperature * temp +
+            weights.hrv * hrv +
+            weights.activity * activity;
+
+        return sigmoid(z);
+    }
+
+    function updateSystem() {
+        const data = generateSensorData();
+        const riskProb = predictRisk(data);
+
+        document.getElementById("hr").innerText = data.heart_rate.toFixed(1);
+        document.getElementById("spo2").innerText = data.spo2.toFixed(1);
+        document.getElementById("temp").innerText = data.temperature.toFixed(2);
+        document.getElementById("hrv").innerText = data.hrv.toFixed(1);
+        document.getElementById("activity").innerText = data.activity.toFixed(2);
+
+        document.getElementById("riskProb").innerText = riskProb.toFixed(2);
+
+        const statusElement = document.getElementById("riskStatus");
+
+        if (riskProb < 0.3) {
+            statusElement.innerText = "LOW RISK";
+            statusElement.className = "risk-low";
+        } else if (riskProb < 0.6) {
+            statusElement.innerText = "MODERATE RISK";
+            statusElement.className = "risk-mid";
+        } else {
+            statusElement.innerText = "HIGH RISK ⚠";
+            statusElement.className = "risk-high";
+        }
+
+        // Update Chart
+        riskChart.data.labels.push("");
+        riskChart.data.datasets[0].data.push(riskProb);
+
+        if (riskChart.data.labels.length > 20) {
+            riskChart.data.labels.shift();
+            riskChart.data.datasets[0].data.shift();
+        }
+
+        riskChart.update();
+    }
+
+    setInterval(updateSystem, 1000);
+</script>
+
+</body>
+</html>
