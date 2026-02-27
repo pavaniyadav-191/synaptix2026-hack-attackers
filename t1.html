@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Healthy Food Dashboard</title>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        background: #f0f8f5;
+        display: flex;
+        justify-content: center;
+        padding: 50px;
+    }
+    .card {
+        background: #fff;
+        padding: 30px;
+        border-radius: 15px;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        width: 400px;
+    }
+    h2 {
+        text-align: center;
+        margin-bottom: 20px;
+    }
+    input, select {
+        width: 100%;
+        padding: 10px;
+        margin: 10px 0;
+        border-radius: 8px;
+        border: 1px solid #ccc;
+    }
+    button {
+        width: 100%;
+        padding: 12px;
+        background: #ff7f50;
+        color: #fff;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 16px;
+    }
+    .result {
+        margin-top: 20px;
+        font-weight: bold;
+        text-align: center;
+    }
+    ul {
+        text-align: left;
+        margin-top: 10px;
+    }
+</style>
+</head>
+<body>
+<div class="card">
+    <h2>Healthy Food Suggestions</h2>
+    <input type="number" id="age" placeholder="Age">
+    <select id="activity">
+        <option value="low">Low Activity</option>
+        <option value="moderate">Moderate Activity</option>
+        <option value="high">High Activity</option>
+    </select>
+    <select id="diet">
+        <option value="omnivore">Omnivore</option>
+        <option value="vegetarian">Vegetarian</option>
+        <option value="vegan">Vegan</option>
+    </select>
+    <button onclick="suggestFood()">Get Suggestions</button>
+    <div class="result" id="result"></div>
+</div>
+
+<script>
+function suggestFood() {
+    let age = parseInt(document.getElementById('age').value);
+    let activity = document.getElementById('activity').value;
+    let diet = document.getElementById('diet').value;
+
+    let foods = [];
+
+    // Base food suggestions by diet
+    if(diet === 'omnivore'){
+        foods = ['Lean meats (chicken, fish)', 'Eggs', 'Dairy products', 'Fruits', 'Vegetables', 'Whole grains'];
+    } else if(diet === 'vegetarian'){
+        foods = ['Legumes (beans, lentils)', 'Eggs', 'Dairy products', 'Fruits', 'Vegetables', 'Whole grains'];
+    } else if(diet === 'vegan'){
+        foods = ['Legumes', 'Tofu & Tempeh', 'Nuts & Seeds', 'Fruits', 'Vegetables', 'Whole grains'];
+    }
+
+    // Adjust for activity level
+    if(activity === 'high'){
+        foods.push('Protein-rich snacks', 'Smoothies with fruits and nuts');
+    } else if(activity === 'low'){
+        foods.push('Fiber-rich foods', 'Green vegetables');
+    }
+
+    // Add age-specific advice
+    if(age < 18){
+        foods.push('Calcium-rich foods for growth');
+    } else if(age >= 65){
+        foods.push('Foods high in vitamin D and omega-3');
+    }
+
+    // Display suggestions
+    let resultHTML = '<p>Recommended Healthy Foods:</p><ul>';
+    foods.forEach(f => {
+        resultHTML += `<li>${f}</li>`;
+    });
+    resultHTML += '</ul>';
+
+    document.getElementById('result').innerHTML = resultHTML;
+}
+</script>
+</body>
+</html>
