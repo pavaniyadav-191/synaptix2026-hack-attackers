@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>AI Health Monitoring Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(to right, #0f9b0f, #38ef7d);
+            color: white;
+            text-align: center;
+            padding: 20px;
+            transition: background 0.5s;
+            overflow-x: hidden;
+        }
+
+        /* SAFE Background */
+        .safe-bg {
+            background: linear-gradient(to right, #0f9b0f, #38ef7d);
+        }
+
+        /* DANGER Background */
+        .danger-bg {
+            background: linear-gradient(to right, #8b0000, #ff4d4d);
+        }
+
+        .container {
+            background: #1f1f1f;
+            padding: 20px;
+            border-radius: 15px;
+            width: 400px;
+            margin: auto;
+            box-shadow: 0px 5px 20px rgba(0,0,0,0.5);
+        }
+
+        input {
+            width: 90%;
+            padding: 8px;
+            margin: 8px;
+            border-radius: 6px;
+            border: none;
+        }
+
+        button {
+            padding: 10px 20px;
+            background: #00c6ff;
+            border: none;
+            color: white;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        .status {
+            font-size: 18px;
+            margin-top: 10px;
+        }
+
+        .safe { color: #00ff99; }
+        .alert { color: #ffcccc; }
+
+        .meter {
+            width: 100%;
+            background: #333;
+            border-radius: 20px;
+            overflow: hidden;
+            margin-top: 15px;
+        }
+
+        .meter-fill {
+            height: 20px;
+            width: 0%;
+            background: green;
+            transition: 0.5s;
+        }
+
+        canvas {
+            margin-top: 20px;
+            background: white;
+            border-radius: 10px;
+        }
+
+        /* 🚑 Ambulance Animation */
+        .ambulance {
+            position: fixed;
+            bottom: 20px;
+            left: -200px;
+            font-size: 40px;
+            display: none;
+        }
+
+        .move {
+            animation: moveAmbulance 5s linear infinite;
+            display: block;
+        }
+
+        @keyframes moveAmbulance {
+            0% { left: -200px; }
+            100% { left: 100%; }
+        }
+    </style>
+</head>
+
+<body class="safe-bg">
+
+<h1>AI Wearable Health Monitoring</h1>
+
+<div class="container">
+
+    <input type="number" id="hr" placeholder="Heart Rate (bpm)">
+    <input type="number" step="0.1" id="spo2" placeholder="SpO2 (%)">
+    <input type="number" step="0.1" id="temp" placeholder="Temperature (°C)">
+    <br>
+    <button onclick="computeRisk()">Analyze</button>
+
+    <div class="status" id="status"></div>
+
+    <div class="meter">
+        <div class="meter-fill" id="meterFill"></div>
+    </div>
+
+    <canvas id="riskChart"></canvas>
+
+</div>
+
+<!-- 🚑 Ambulance -->
+<div id="ambulance" class="ambulance">🚑</div>
+
+<script>
+    let baseline = 0.2;
+    let riskData = [];
+    let labels = [];
+
+    // 🚨 Ambulance Siren Sound (Working Source)
+    let siren = new Audio(""C:\Users\HP\Downloads\ambulance.mp3"");
+    siren.loop = true;
+
+    const ctx = document.getElementById('riskChart').getContext('2d');
+    const riskChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Risk Level',
+                data: riskData,
+                borderColor: 'red',
+                fill: false,
+                tension: 0.3
+            }]
+        },
+        options: {
+            scales: {
+                y: { beginAtZero: true }
+            }
+        }
+    });
+
+    function computeRisk() {
+        let hr = parseFloat(document.getElementById("hr").value) || 0;
+        let spo2 = parseFloat(document.getElementById("spo2").value) || 0;
+        let temp = parseFloat(document.getElementById("temp").value) || 0;
+
+        let risk = 0.0;
+
+        risk += (hr - 70) * 0.02;
+        risk += (97 - spo2) * 0.5;
+        risk += (temp - 36.8) * 0.7;
+
+        let status = document.getElementById("status");
+        let meterFill = document.getElementById("meterFill");
+        let ambulance = document.getElementById("ambulance");
+
+        let riskPercent = Math.min(Math.max(risk * 20, 0), 100);
+        meterFill.style.width = riskPercent + "%";
+
+        if (risk > baseline + 0.15) {
+
+            status.innerHTML = "🚨 DANGER! Risk Level: " + risk.toFixed(2);
+            status.className = "status alert";
+            meterFill.style.background = "red";
+
+            document.body.classList.remove("safe-bg");
+            document.body.classList.add("danger-bg");
+
+            ambulance.classList.add("move");
+
+            siren.currentTime = 0;
+            siren.play().catch(e => console.log(e));
+
+        } else {
+
+            status.innerHTML = "✅ SAFE. Risk Level: " + risk.toFixed(2);
+            status.className = "status safe";
+            meterFill.style.background = "green";
+
+            document.body.classList.remove("danger-bg");
+            document.body.classList.add("safe-bg");
+
+            ambulance.classList.remove("move");
+
+            siren.pause();
+            siren.currentTime = 0;
+        }
+
+        baseline = 0.98 * baseline + 0.02 * risk;
+
+        riskData.push(risk.toFixed(2));
+        labels.push("R" + riskData.length);
+        riskChart.update();
+    }
+</script>
+
+</body>
+</html>
